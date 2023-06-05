@@ -1,18 +1,15 @@
 from rest_framework.generics import GenericAPIView
-from rest_framework import response, status
-from . import serializers, models
+from rest_framework import status
+from . import serializers
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-import jwt
-from .models import ConfirmationCode, CustomUser
+
+from .models import CustomUser
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from .permissions import IsUser, IsAdministator, IsModerator, IsSuperUser, IsAnAuthor
-from django.core.mail import send_mail
 import uuid
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, viewsets
+from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from .utils import get_confirmation_code
 
