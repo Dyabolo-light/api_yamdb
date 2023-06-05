@@ -1,14 +1,18 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+USER = 'user'
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+
+ROLES = (
+    (USER, USER),
+    (ADMIN, ADMIN),
+    (MODERATOR, MODERATOR),
+)
+
 
 class User(AbstractUser):
-    ROLES = (
-        ('User', 'User'),
-        ('Moderator', 'Moderator'),
-        ('Admin', 'Admin'),
-
-    )
 
     username = models.CharField(
         max_length=150,
@@ -27,7 +31,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     bio = models.TextField(blank=True)
-    role = models.CharField(max_length=15, choices=ROLES, default='User')
+    role = models.CharField(max_length=15, choices=ROLES, default=USER)
 
 
 class Category(models.Model):

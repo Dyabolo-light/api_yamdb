@@ -1,12 +1,10 @@
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, viewsets
-# from rest_framework.permissions import (IsAdminUser,
-#                                        IsAuthenticatedOrReadOnly)
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from reviews.models import Category, Genre, Title
-# from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
                           TitleInfoSerializer, TitleSerializer)
 
@@ -21,7 +19,7 @@ class ListCreateDestroyViewSet(mixins.CreateModelMixin,
 class CategoryViewSet(ListCreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-#    permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -30,7 +28,7 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-#    permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -53,7 +51,7 @@ class TitleFilter(django_filters.FilterSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-#    permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     filterset_class = TitleFilter
     search_fields = ('name', 'year', 'genre', 'category')
