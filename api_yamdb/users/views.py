@@ -1,5 +1,5 @@
 from rest_framework.generics import GenericAPIView
-from rest_framework import status
+from rest_framework import filters, status
 from . import serializers
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -49,20 +49,19 @@ class TokenView(GenericAPIView):
 
 
 class UsersViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
     serializer_class = serializers.UserSerializer
     pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
-    search_field = ('$username', )
+    search_fields = ('username', )
 
     def get_object(self):
         return self.request.user
 
-    def get_queryset(self):
-        return CustomUser.objects.all()
-
     def get_permissions(self):
-        if self.action in ['list', 'update', 'destroy']:
+        if self.action in ['list', 'update', 'destroy', 'retrieve', ]:
             self.permission_classes = [IsAuthenticated, IsAdministator, ]
         if self.action in ['create', 'update', ]:
-            self.permission_classes = [AllowAny, ]
+            self.permission_classes = [IsAuthenticated, IsAnAuthor, ]
         return super().get_permissions()
