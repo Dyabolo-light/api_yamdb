@@ -17,9 +17,8 @@ class IsModerator(permissions.BasePermission):
 
 class IsAdministator(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(
-            request.user.role == 'admin' and request.user.is_authenticated
-        )
+        return ((request.user.role == 'admin' or request.user.is_superuser)
+                and request.user.is_authenticated)
 
 
 class IsSuperUser(permissions.BasePermission):

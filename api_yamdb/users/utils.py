@@ -1,7 +1,8 @@
-from .models import ConfirmationCode
 from django.core.mail import send_mail
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+
+from .models import ConfirmationCode
 
 
 def get_confirmation_code(data):

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import CustomUser
 
 
@@ -6,7 +7,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', ]
+        fields = ['username', 'email']
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -15,11 +16,12 @@ class TokenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['confirmation_code', 'username', ]
+        fields = ['confirmation_code', 'username']
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'bio', 'role', ]
+        fields = ['username', 'email', 'first_name',
+                  'last_name', 'bio', 'role']
