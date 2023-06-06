@@ -2,9 +2,9 @@ from datetime import datetime
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title,  Review, Comment #User
+#TODO заменить далее User на CustomUser
 from users.models import CustomUser
-
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -44,12 +44,30 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleInfoSerializer(serializers.ModelSerializer):
+    rating = serializers.FloatField() #TODO в предыдущем сериалайзере рейтинг вроде не нужен? 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
 
     class Meta:
         fields = '__all__'
+        # fields = ('id', 'name', 'description', 'category',
+        #     'genre', 'year', 'rating')
         model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+#    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Review
+
+
+class CommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = Comment
 
 
 class SignUpSerializer(serializers.ModelSerializer):

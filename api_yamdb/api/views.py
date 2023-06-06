@@ -11,14 +11,16 @@ from rest_framework.permissions import (AllowAny,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review, Comment
 from users.models import CustomUser
 from users.utils import get_confirmation_code
 from .permissions import (IsAdminOrReadOnly, IsAdministator, IsAnAuthor)
 from .serializers import (CategorySerializer, GenreSerializer,
-                          SignUpSerializer, TitleInfoSerializer,
-                          TitleSerializer, TokenSerializer, UserSerializer)
+                          SignUpSerializer, Serializer,
+                          TitleSerializer, TokenSerializer, UserSerializer
+                         , ReviewSerializer, CommentSerializer)
 
+from django.db.models import Avg
 
 class ListCreateDestroyViewSet(mixins.CreateModelMixin,
                                mixins.DestroyModelMixin,
@@ -54,14 +56,14 @@ class TitleFilter(django_filters.FilterSet):
                                          lookup_expr='icontains')
     genre = django_filters.CharFilter(field_name='genre__slug',
                                       lookup_expr='icontains')
-
     class Meta:
         model = Title
         fields = '__all__'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')) #изменения которые дают рейтинг
+#     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     filterset_class = TitleFilter
@@ -71,6 +73,25 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or self.action == 'retrieve':
             return TitleInfoSerializer
         return TitleSerializer
+      
+class ReviewViewSet(viewsets.ModelViewSet):
+   queryset = Review.objects.all()
+   serializer_class = ReviewSerializer
+#    permission_classes = (IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly)
+#    pagination_class = LimitOffsetPagination
+
+   def perform_create(self, serializer):
+        title_id = self.kwargs.get("title_id")
+        serializer.save(title_id=title_id)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get("review_id")
+        serializer.save(review_id=review_id)
 
 
 class SignUpView(GenericAPIView):
