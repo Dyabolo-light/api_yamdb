@@ -1,9 +1,9 @@
 from datetime import datetime
-
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Category, Genre, Title, User
+from reviews.models import Category, Genre, Title
+from users.models import CustomUser
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -52,44 +52,25 @@ class TitleInfoSerializer(serializers.ModelSerializer):
         model = Title
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.ModelSerializer):
+
     class Meta:
-        model = User
-        fields = '__all__'
+        model = CustomUser
+        fields = ['username', 'email']
 
 
-# class FollowSerializer(serializers.ModelSerializer):
-#    user = SlugRelatedField(
-#        read_only=True,
-#        slug_field='username',
-#        default=serializers.CurrentUserDefault()
-#    )
-#    following = SlugRelatedField(
-#        queryset=User.objects.all(),
-#        slug_field='username', read_only=False,
-#    )
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(max_length=5, required=True)
 
-#    class Meta:
-#        fields = '__all__'
-#        model = Follow
-#        validators = [
-#            UniqueTogetherValidator(
-#                queryset=Follow.objects.all(),
-#                fields=['user', 'following']
-#            )
-#        ]
-
-#    def validate_following(self, data):
-#        if data == self.context.get('request').user:
-#            raise serializers.ValidationError(
-#                'Попытка подписаться на самого себя'
-#            )
-#        return data
+    class Meta:
+        model = CustomUser
+        fields = ['confirmation_code', 'username']
 
 
-# class PostSerializer(serializers.ModelSerializer):
-#    author = SlugRelatedField(slug_field='username', read_only=True)
+class UserSerializer(serializers.ModelSerializer):
 
-#    class Meta:
-#        fields = '__all__'
-#        model = Post
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'first_name',
+                  'last_name', 'bio', 'role']
