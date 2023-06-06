@@ -1,26 +1,52 @@
+from datetime import datetime
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Category, Genre, Title, User, Review, Comment
-
+from reviews.models import Category, Genre, Title,  Review, Comment #User
+#TODO заменить далее User на CustomUser
+from users.models import CustomUser
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
         model = Category
+        exclude = ('id', )
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
         model = Genre
+        exclude = ('id', )
+        lookup_field = 'slug'
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.FloatField()
+    genre = SlugRelatedField(
+        queryset=Genre.objects.all(),
+        many=True,
+        slug_field='slug'
+    )
+    category = SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug',
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+    def validate_year(self, value):
+        if value > datetime.now().year:
+            raise serializers.ValidationError('Неверный год произведения')
+        return value
+
+
+class TitleInfoSerializer(serializers.ModelSerializer):
+    rating = serializers.FloatField() #TODO в предыдущем сериалайзере рейтинг вроде не нужен? 
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
 
     class Meta:
         fields = '__all__'
@@ -32,58 +58,37 @@ class TitleSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
 #    author = SlugRelatedField(slug_field='username', read_only=True)
 
-    # title_id = self.context['view'].kwargs.get('title_id')
-    # print ('titleid', title_id)
-    # rating = serializers.FloatField()
     class Meta:
         fields = '__all__'
-
         model = Review
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # author = serializers.SlugRelatedField(
-    #     read_only=True, slug_field='username'
-    # )
-    # review = serializers.ReadOnlyField(source="post_id")
 
     class Meta:
         fields = '__all__'
         model = Comment
 
 
-# class FollowSerializer(serializers.ModelSerializer):
-#    user = SlugRelatedField(
-#        read_only=True,
-#        slug_field='username',
-#        default=serializers.CurrentUserDefault()
-#    )
-#    following = SlugRelatedField(
-#        queryset=User.objects.all(),
-#        slug_field='username', read_only=False,
-#    )
+class SignUpSerializer(serializers.ModelSerializer):
 
-#    class Meta:
-#        fields = '__all__'
-#        model = Follow
-#        validators = [
-#            UniqueTogetherValidator(
-#                queryset=Follow.objects.all(),
-#                fields=['user', 'following']
-#            )
-#        ]
-
-#    def validate_following(self, data):
-#        if data == self.context.get('request').user:
-#            raise serializers.ValidationError(
-#                'Попытка подписаться на самого себя'
-#            )
-#        return data
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email']
 
 
-# class PostSerializer(serializers.ModelSerializer):
-#    author = SlugRelatedField(slug_field='username', read_only=True)
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(max_length=5, required=True)
 
-#    class Meta:
-#        fields = '__all__'
-#        model = Post
+    class Meta:
+        model = CustomUser
+        fields = ['confirmation_code', 'username']
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'first_name',
+                  'last_name', 'bio', 'role']
