@@ -4,11 +4,13 @@ from rest_framework.pagination import LimitOffsetPagination
 # from rest_framework.permissions import (IsAuthenticated,
 #                                         IsAuthenticatedOrReadOnly)
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review, Comment
 # from .permissions import IsAuthorOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
-                          TitleSerializer)
+                          TitleSerializer, ReviewSerializer,
+                          CommentSerializer)
 
+from django.db.models import Avg
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -32,12 +34,39 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')) 
     serializer_class = TitleSerializer
     # permission_classes = (,)
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'yaer', 'genre', 'category')
+    search_fields = ('name', 'year', 'genre', 'category')
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+   queryset = Review.objects.all()
+   serializer_class = ReviewSerializer
+#    permission_classes = (IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly)
+#    pagination_class = LimitOffsetPagination
+
+   def perform_create(self, serializer):
+        title_id = self.kwargs.get("title_id")
+        serializer.save(title_id=title_id)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get("review_id")
+        serializer.save(review_id=review_id)
+
+
+    # def get_queryset(self):
+    #     return self.get_base_record().comments.all()
+
+    # ...
 
 # class PostViewSet(viewsets.ModelViewSet):
 #    queryset = Post.objects.all()
