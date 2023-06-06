@@ -76,29 +76,30 @@ python manage.py pull_data
 Отправка GET-запроса на адрес http://127.0.0.1:8000/api/v1/titles/
 Ожидаемый результат:
 ```
+
 {
-"count": 0,
-"next": "string",
-"previous": "string",
-"results": [
-{
-"id": 0,
-"name": "string",
-"year": 0,
-"rating": 0,
-"description": "string",
-"genre": [
-{
-"name": "string",
-"slug": "string"
-}
-],
-"category": {
-"name": "string",
-"slug": "string"
-}
-}
-]
+  "count": 0,
+  "next": "string",
+  "previous": "string",
+  "results": [
+    {
+      "id": 0,
+      "name": "string",
+      "year": 0,
+      "rating": 0,
+      "description": "string",
+      "genre": [
+        {
+          "name": "string",
+          "slug": "string"
+        }
+      ],
+      "category": {
+        "name": "string",
+        "slug": "string"
+      }
+    }
+  ]
 }
 ```
 ### Получение списка всех отзывов
@@ -106,18 +107,18 @@ python manage.py pull_data
 Ожидаемый результат:
 ```
 {
-"count": 0,
-"next": "string",
-"previous": "string",
-"results": [
-{
-"id": 0,
-"text": "string",
-"author": "string",
-"score": 1,
-"pub_date": "2019-08-24T14:15:22Z"
-}
-]
+  "count": 0,
+  "next": "string",
+  "previous": "string",
+  "results": [
+    {
+      "id": 0,
+      "text": "string",
+      "author": "string",
+      "score": 1,
+      "pub_date": "2019-08-24T14:15:22Z"
+    }
+  ]
 }
 ```
 
@@ -126,8 +127,8 @@ python manage.py pull_data
 Отправка POST-запроса на адрес http://127.0.0.1:8000/api/v1/auth/signup/ с данными 
 ```
 {
-"email": "user@example.com",
-"username": "string"
+  "email": "user@example.com",
+  "username": "string"
 }
 ```
 
@@ -136,14 +137,14 @@ python manage.py pull_data
 Отправка POST-запроса на адрес http://127.0.0.1:8000/api/v1/auth/token/ с данными
 ```
 {
-"username": "string",
-"confirmation_code": "string"
+  "username": "string",
+  "confirmation_code": "string"
 }
 ```
 Ожидаемый ответ:
 ```
 {
-"token": "string"
+  "token": "string"
 }
 ```
 
