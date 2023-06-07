@@ -12,11 +12,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, Comment
-from users.models import CustomUser
+from users.models import CustomUser, ConfirmationCode
 from users.utils import get_confirmation_code
 from .permissions import (IsAdminOrReadOnly, IsAdministator, IsAnAuthor)
 from .serializers import (CategorySerializer, GenreSerializer,
-                          SignUpSerializer, Serializer,
+                          SignUpSerializer, TitleInfoSerializer,
                           TitleSerializer, TokenSerializer, UserSerializer
                          , ReviewSerializer, CommentSerializer)
 
@@ -128,7 +128,7 @@ class TokenView(GenericAPIView):
         ).exists():
             return Response({'error': 'Bad request'},
                             status=status.HTTP_404_NOT_FOUND)
-        if not CustomUser.objects.filter(
+        if not ConfirmationCode.objects.filter(
             confirmation_code=data.get('confirmation_code')
         ).exists():
             return Response({'error': 'Bad request'},

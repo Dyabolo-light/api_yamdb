@@ -38,13 +38,12 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
 
-#TODO надо импортировать новый user
 
 class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews')
+        CustomUser, on_delete=models.CASCADE, related_name='reviews')
     # image = models.ImageField(
     #     upload_to='posts/', null=True, blank=True)
     title = models.ForeignKey(
@@ -59,7 +58,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments')
+        CustomUser, on_delete=models.CASCADE, related_name='comments')
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
