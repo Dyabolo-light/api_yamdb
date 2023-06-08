@@ -1,27 +1,26 @@
 import django_filters
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (AllowAny,
-                                        IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly,
-                                        )
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, Comment
 from users.models import CustomUser, ConfirmationCode
 from users.utils import get_confirmation_code
-from .permissions import (IsAdminOrReadOnly, IsAdministator, IsAnAuthor, AuthorOrReadOnly)
+from .permissions import (IsAdminOrReadOnly, IsAdministrator,
+                          IsAnAuthor, IsAuthorOrModerator)
 from .serializers import (CategorySerializer, GenreSerializer,
                           SignUpSerializer, TitleInfoSerializer,
-                          TitleSerializer, TokenSerializer, UserSerializer
-                         , ReviewSerializer, CommentSerializer)
+                          TitleSerializer, TokenSerializer, UserSerializer,
+                          ReviewSerializer, CommentSerializer)
 
-from django.db.models import Avg
 
 class ListCreateDestroyViewSet(mixins.CreateModelMixin,
                                mixins.DestroyModelMixin,
@@ -57,14 +56,14 @@ class TitleFilter(django_filters.FilterSet):
                                          lookup_expr='icontains')
     genre = django_filters.CharFilter(field_name='genre__slug',
                                       lookup_expr='icontains')
+
     class Meta:
         model = Title
         fields = '__all__'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('reviews__score')) #изменения которые дают рейтинг
-#     queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     filterset_class = TitleFilter
@@ -74,31 +73,27 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or self.action == 'retrieve':
             return TitleInfoSerializer
         return TitleSerializer
-      
+
+
 class ReviewViewSet(viewsets.ModelViewSet):
-   queryset = Review.objects.all()
-   serializer_class = ReviewSerializer
-   permission_classes = (AuthorOrReadOnly,)
-#    permission_classes = [IsAnAuthor | IsAdminOrReadOnly]
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorOrModerator,)
 
-
-   def perform_create(self, serializer):
-        author = self.request.user
-        title_id = self.kwargs.get("title_id")
-        serializer.save(title_id=title_id, author = author)
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        serializer.save(title_id=title_id, author=self.request.user)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = (AuthorOrReadOnly,)
+    permission_classes = (IsAuthorOrModerator,)
 
-    def perform_create(self, serializer):      
-        author = self.request.user
-        review_id = self.kwargs.get("review_id")
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-
-        serializer.save(review = review, author = author )
+        serializer.save(review=review, author=self.request.user)
 
 
 class SignUpView(GenericAPIView):
@@ -148,18 +143,15 @@ class TokenView(GenericAPIView):
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdministator]
+    permission_classes = (IsAuthenticated, IsAdministrator)
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     http_method_names = ['get', 'patch', 'post', 'delete']
     lookup_field = 'username'
     search_fields = ('username', )
 
-    @action(
-        detail=False,
-        methods=('GET', 'PATCH'),
-        permission_classes=(IsAuthenticated, IsAnAuthor)
-    )
+    @action(detail=False, methods=('GET', 'PATCH'),
+            permission_classes=(IsAuthenticated, IsAnAuthor))
     def me(self, request):
         if request.method == 'GET':
             serializer = UserSerializer(request.user)

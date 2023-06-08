@@ -1,12 +1,12 @@
 from datetime import datetime
-from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
 from django.shortcuts import get_object_or_404
 from django.core.validators import MinValueValidator, MaxValueValidator
+from rest_framework import serializers
+from rest_framework.relations import SlugRelatedField
 
-
-from reviews.models import Category, Genre, Title,  Review, Comment #User
+from reviews.models import Category, Genre, Title, Review, Comment
 from users.models import CustomUser
+
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -46,7 +46,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleInfoSerializer(serializers.ModelSerializer):
-    rating = serializers.FloatField() #TODO в предыдущем сериалайзере рейтинг вроде не нужен? 
+    rating = serializers.FloatField()
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
 
@@ -81,11 +81,12 @@ class ReviewSerializer(serializers.ModelSerializer):
             )
         return data
 
+
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    review = serializers.ReadOnlyField(source="review_id")
+    review = serializers.ReadOnlyField(source='review_id')
 
     class Meta:
         fields = '__all__'
@@ -96,7 +97,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email']
+        fields = ('username', 'email')
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -105,12 +106,12 @@ class TokenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['confirmation_code', 'username']
+        fields = ('confirmation_code', 'username')
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name',
-                  'last_name', 'bio', 'role']
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
