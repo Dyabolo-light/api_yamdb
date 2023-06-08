@@ -1,9 +1,11 @@
 from datetime import datetime
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
+from django.shortcuts import get_object_or_404
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 from reviews.models import Category, Genre, Title,  Review, Comment #User
-#TODO заменить далее User на CustomUser
 from users.models import CustomUser
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -50,20 +52,40 @@ class TitleInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        # fields = ('id', 'name', 'description', 'category',
-        #     'genre', 'year', 'rating')
         model = Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-#    author = SlugRelatedField(slug_field='username', read_only=True)
+    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    score = serializers.IntegerField(
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        )
+    )
 
     class Meta:
         fields = '__all__'
         model = Review
 
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+        title_id = self.context['view'].kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        user = self.context['request'].user
+        if Review.objects.filter(title=title, author=user).exists():
+            raise serializers.ValidationError(
+                'На каждое произведение от каждого автора только один отзыв'
+            )
+        return data
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+    review = serializers.ReadOnlyField(source="review_id")
 
     class Meta:
         fields = '__all__'

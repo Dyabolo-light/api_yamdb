@@ -44,13 +44,19 @@ class Review(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name='reviews')
-    # image = models.ImageField(
-    #     upload_to='posts/', null=True, blank=True)
     title = models.ForeignKey(
         Title, on_delete=models.SET_NULL,
         related_name='reviews', null=True
     )
     score = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='title_author_review'
+            )
+        ]
 
 
     def __str__(self):

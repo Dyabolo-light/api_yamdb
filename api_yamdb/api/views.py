@@ -7,14 +7,15 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny,
                                         IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+                                        IsAuthenticatedOrReadOnly,
+                                        )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, Comment
 from users.models import CustomUser, ConfirmationCode
 from users.utils import get_confirmation_code
-from .permissions import (IsAdminOrReadOnly, IsAdministator, IsAnAuthor)
+from .permissions import (IsAdminOrReadOnly, IsAdministator, IsAnAuthor, AuthorOrReadOnly)
 from .serializers import (CategorySerializer, GenreSerializer,
                           SignUpSerializer, TitleInfoSerializer,
                           TitleSerializer, TokenSerializer, UserSerializer
@@ -77,21 +78,27 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
    queryset = Review.objects.all()
    serializer_class = ReviewSerializer
-#    permission_classes = (IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly)
-#    pagination_class = LimitOffsetPagination
+   permission_classes = (AuthorOrReadOnly,)
+#    permission_classes = [IsAnAuthor | IsAdminOrReadOnly]
+
 
    def perform_create(self, serializer):
+        author = self.request.user
         title_id = self.kwargs.get("title_id")
-        serializer.save(title_id=title_id)
+        serializer.save(title_id=title_id, author = author)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (AuthorOrReadOnly,)
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer):      
+        author = self.request.user
         review_id = self.kwargs.get("review_id")
-        serializer.save(review_id=review_id)
+        review = get_object_or_404(Review, id=review_id)
+
+        serializer.save(review = review, author = author )
 
 
 class SignUpView(GenericAPIView):
