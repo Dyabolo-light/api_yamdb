@@ -17,6 +17,7 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
+
 class Title(models.Model):
     name = models.CharField(max_length=256)
     year = models.IntegerField()
@@ -25,10 +26,7 @@ class Title(models.Model):
         Category, on_delete=models.SET_NULL,
         related_name='titles', blank=False, null=True
     )
-    genre = models.ManyToManyField(
-        Genre,
-        related_name='titles', blank=False
-    )
+    genre = models.ManyToManyField(Genre, related_name='titles', blank=False)
 
     def __str__(self):
         return self.name
@@ -38,23 +36,29 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
 
-
 class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
-    author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='reviews')
-    # image = models.ImageField(
-    #     upload_to='posts/', null=True, blank=True)
+    author = models.ForeignKey(CustomUser,
+                               on_delete=models.CASCADE,
+                               related_name='reviews')
     title = models.ForeignKey(
-        Title, on_delete=models.SET_NULL,
+        Title, on_delete=models.CASCADE,
         related_name='reviews', null=True
     )
     score = models.IntegerField()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='title_author_review'
+            )
+        ]
 
     def __str__(self):
         return self.text
+
 
 class Comment(models.Model):
     author = models.ForeignKey(

@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from rest_framework_simplejwt.tokens import RefreshToken
 
 ROLES = (
@@ -11,9 +11,7 @@ ROLES = (
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(max_length=254,
-                              unique=True,
-                              blank=False,
+    email = models.EmailField(max_length=254, unique=True, blank=False,
                               null=False)
     role = models.CharField(max_length=15, choices=ROLES, default='user')
     bio = models.TextField(blank=True)
