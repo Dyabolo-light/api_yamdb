@@ -1,4 +1,3 @@
-import django_filters
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -11,15 +10,16 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Title, Review
 from users.models import CustomUser, ConfirmationCode
 from users.utils import get_confirmation_code
+from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdministrator,
                           IsAnAuthor, IsAuthorOrModerator)
 from .serializers import (CategorySerializer, GenreSerializer,
-                          SignUpSerializer, TitleInfoSerializer,
-                          TitleSerializer, TokenSerializer, UserSerializer,
-                          ReviewSerializer, CommentSerializer)
+                          SignUpSerializer, TitleReadSerializer,
+                          TitleWriteSerializer, TokenSerializer,
+                          UserSerializer, ReviewSerializer, CommentSerializer)
 
 
 class ListCreateDestroyViewSet(mixins.CreateModelMixin,
@@ -47,21 +47,6 @@ class GenreViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
 
 
-class TitleFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(field_name='name',
-                                     lookup_expr='icontains')
-    year = django_filters.NumberFilter(field_name='year',
-                                       lookup_expr='icontains')
-    category = django_filters.CharFilter(field_name='category__slug',
-                                         lookup_expr='icontains')
-    genre = django_filters.CharFilter(field_name='genre__slug',
-                                      lookup_expr='icontains')
-
-    class Meta:
-        model = Title
-        fields = '__all__'
-
-
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly)
@@ -71,8 +56,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
-            return TitleInfoSerializer
-        return TitleSerializer
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -162,9 +147,3 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(role=request.user.role)
         return Response(serializer.data)
-
-    def get_object(self):
-        pk = self.kwargs.get('pk')
-        if pk == 'me':
-            return self.request.user
-        return super().get_object()

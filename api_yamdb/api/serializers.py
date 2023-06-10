@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Title, Review
 from users.models import CustomUser
 
 
@@ -24,7 +24,7 @@ class GenreSerializer(serializers.ModelSerializer):
         lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     genre = SlugRelatedField(
         queryset=Genre.objects.all(),
         many=True,
@@ -45,7 +45,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
 
-class TitleInfoSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.FloatField()
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
