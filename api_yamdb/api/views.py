@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -10,8 +11,9 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
 from reviews.models import Category, Comment, Genre, Title, Review
-from users.models import CustomUser, ConfirmationCode
+from users.models import CustomUser
 from users.utils import get_confirmation_code
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdministrator,
@@ -88,14 +90,17 @@ class SignUpView(GenericAPIView):
     def post(self, request):
         data = request.data
         serializer = self.serializer_class(data=data)
-        if CustomUser.objects.filter(username=data.get('username'),
-                                     email=data.get('email')).exists():
-            return Response(get_confirmation_code(data),
-                            status=status.HTTP_200_OK)
         serializer.is_valid(raise_exception=True)
-        if data.get('username') == 'me':
-            return Response({'error': 'Restricted'},
-                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            CustomUser.objects.get_or_create(
+                username=data.get('username'),
+                email=data.get('email')
+            )
+        except IntegrityError:
+            return Response(
+                {'error': 'Bad request'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer.save()
         return Response(get_confirmation_code(serializer.validated_data),
                         status=status.HTTP_200_OK)
@@ -115,7 +120,7 @@ class TokenView(GenericAPIView):
         ).exists():
             return Response({'error': 'Bad request'},
                             status=status.HTTP_404_NOT_FOUND)
-        if not ConfirmationCode.objects.filter(
+        if not CustomUser.objects.filter(
             confirmation_code=data.get('confirmation_code')
         ).exists():
             return Response({'error': 'Bad request'},

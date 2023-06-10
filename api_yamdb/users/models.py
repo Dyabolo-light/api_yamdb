@@ -2,19 +2,25 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from rest_framework_simplejwt.tokens import RefreshToken
 
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+SUPER_USER = 'super_user'
+
 ROLES = (
-    ('user', 'user'),
-    ('moderator', 'moderator'),
-    ('admin', 'admin'),
-    ('super_user', 'super_user'),
+    (USER, 'user'),
+    (MODERATOR, 'moderator'),
+    (ADMIN, 'admin'),
+    (SUPER_USER, 'super_user'),
 )
 
 
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=254, unique=True, blank=False,
                               null=False)
-    role = models.CharField(max_length=15, choices=ROLES, default='user')
+    role = models.CharField(max_length=15, choices=ROLES, default=ROLES[0][0])
     bio = models.TextField(blank=True)
+    confirmation_code = models.CharField(max_length=10)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -29,12 +35,10 @@ class CustomUser(AbstractUser):
             'access': str(refresh.access_token),
         })
 
+    @property
+    def is_admin(self):
+        return self.role == ADMIN or self.is_superuser
 
-class ConfirmationCode(models.Model):
-    confirmation_code = models.CharField(max_length=5)
-    username = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='confirmation_code',
-        null=True,
-    )
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR

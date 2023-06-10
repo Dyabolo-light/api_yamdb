@@ -6,6 +6,7 @@ from rest_framework.relations import SlugRelatedField
 
 from reviews.models import Category, Comment, Genre, Title, Review
 from users.models import CustomUser
+import re
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -94,16 +95,39 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, max_length=150)
+    email = serializers.EmailField(required=True, max_length=50)
 
-    class Meta:
-        model = CustomUser
-        fields = ('username', 'email')
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                f'Username "{value}" is not allowed'
+            )
+        return value
+
+    def validate(self, data):
+        username = self.initial_data.get('username')
+        email = self.initial_data.get('email')
+        if not re.match(r'[\w.@+-]+', username):
+            raise serializers.ValidationError("Username is not valid")
+        if CustomUser.objects.filter(
+            username=username
+        ) and not CustomUser.objects.filter(email=email):
+            raise serializers.ValidationError("Username already taken")
+        if CustomUser.objects.filter(
+            email=email
+        ) and not CustomUser.objects.filter(username=username):
+            raise serializers.ValidationError("Email already taken")
+        return data
+
+    def create(self, validated_data):
+        return CustomUser.objects.get_or_create(**validated_data)
 
 
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(max_length=5, required=True)
+    confirmation_code = serializers.CharField(max_length=10, required=True)
 
     class Meta:
         model = CustomUser

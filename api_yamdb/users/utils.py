@@ -1,14 +1,14 @@
 import uuid
 from django.core.mail import send_mail
 
-from .models import ConfirmationCode
+from .models import CustomUser
 
 
 def get_confirmation_code(data):
     email = data.get('email')
     username = data.get('username')
-    code = ConfirmationCode.objects.create(
-        confirmation_code=uuid.uuid4().hex[:4].upper()
+    code = CustomUser.objects.update(
+        confirmation_code=uuid.uuid4().hex[:9].upper()
     )
     send_mail(
         "Confirmation",
