@@ -46,13 +46,14 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    rating = serializers.FloatField()
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
+    rating = serializers.IntegerField()
 
     class Meta:
         fields = '__all__'
         model = Title
+        read_only_fields = ['__all__']
 
 
 class ReviewSerializer(serializers.ModelSerializer):
