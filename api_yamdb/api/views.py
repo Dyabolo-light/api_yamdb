@@ -18,10 +18,11 @@ from users.utils import get_confirmation_code
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdministrator,
                           IsAnAuthor, IsAuthorOrModerator)
-from .serializers import (CategorySerializer, GenreSerializer,
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
                           SignUpSerializer, TitleReadSerializer,
                           TitleWriteSerializer, TokenSerializer,
-                          UserSerializer, ReviewSerializer, CommentSerializer)
+                          UserSerializer)
 
 
 class ListCreateDestroyViewSet(mixins.CreateModelMixin,
@@ -84,7 +85,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class SignUpView(GenericAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
     serializer_class = SignUpSerializer
 
     def post(self, request):

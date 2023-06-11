@@ -15,21 +15,15 @@ def validate_score(value):
 
 
 class Category(models.Model):
-    name = models.CharField(
-        verbose_name='Категория',
-        max_length=256)
-    slug = models.SlugField(
-        verbose_name='Слаг',
-        unique=True, max_length=50)
+    name = models.CharField(verbose_name='Категория', max_length=256)
+    slug = models.SlugField(verbose_name='Слаг', unique=True, max_length=50)
 
     def __str__(self):
         return self.name
 
 
 class Genre(models.Model):
-    name = models.CharField(
-        verbose_name='Жанр',
-        max_length=256)
+    name = models.CharField(verbose_name='Жанр', max_length=256)
     slug = models.SlugField(
         verbose_name='Слаг',
         unique=True, max_length=50)
@@ -40,7 +34,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(
-        verbose_name='Название',
+        verbose_name='Название произведения',
         max_length=256)
     year = models.IntegerField(
         verbose_name='Год выпуска',
@@ -50,8 +44,7 @@ class Title(models.Model):
         Category, on_delete=models.SET_NULL,
         related_name='titles',
         verbose_name='Категория',
-        blank=False, null=True
-    )
+        blank=False, null=True)
     genre = models.ManyToManyField(
         Genre, related_name='titles',
         verbose_name='Жанр',
@@ -63,10 +56,12 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        indexes = [models.Index(fields=['year']),
+                   models.Index(fields=['name'])]
 
 
 class Review(models.Model):
-    text = models.TextField()
+    text = models.TextField(verbose_name='Текст отзыва')
     pub_date = models.DateTimeField(verbose_name='Дата публикации',
                                     auto_now_add=True)
     author = models.ForeignKey(CustomUser,

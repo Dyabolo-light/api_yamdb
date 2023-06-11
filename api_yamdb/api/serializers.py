@@ -110,15 +110,15 @@ class SignUpSerializer(serializers.Serializer):
         username = self.initial_data.get('username')
         email = self.initial_data.get('email')
         if not re.match(r'[\w.@+-]+', username):
-            raise serializers.ValidationError("Username is not valid")
+            raise serializers.ValidationError('Username is not valid')
         if CustomUser.objects.filter(
             username=username
         ) and not CustomUser.objects.filter(email=email):
-            raise serializers.ValidationError("Username already taken")
+            raise serializers.ValidationError('Username already taken')
         if CustomUser.objects.filter(
             email=email
         ) and not CustomUser.objects.filter(username=username):
-            raise serializers.ValidationError("Email already taken")
+            raise serializers.ValidationError('Email already taken')
         return data
 
     def create(self, validated_data):

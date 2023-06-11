@@ -18,9 +18,9 @@ ROLES = (
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=254, unique=True, blank=False,
                               null=False)
-    role = models.CharField(max_length=15, choices=ROLES, default=ROLES[0][0])
+    role = models.CharField(max_length=15, choices=ROLES, default=USER)
     bio = models.TextField(blank=True)
-    confirmation_code = models.CharField(max_length=10)
+    confirmation_code = models.CharField(max_length=100)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
