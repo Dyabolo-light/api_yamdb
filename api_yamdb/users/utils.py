@@ -8,7 +8,7 @@ def get_confirmation_code(data):
     email = data.get('email')
     username = data.get('username')
     code = CustomUser.objects.update(
-        confirmation_code=uuid.uuid4().hex[:9].upper()
+        confirmation_code=uuid.uuid4().hex.upper()
     )
     send_mail(
         "Confirmation",
