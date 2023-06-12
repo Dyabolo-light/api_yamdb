@@ -1,4 +1,5 @@
 from django.db import models
+
 from users.models import CustomUser
 from .validators import validate_score, validate_year
 
