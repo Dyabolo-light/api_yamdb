@@ -1,4 +1,6 @@
+import re
 from datetime import datetime
+
 from django.shortcuts import get_object_or_404
 from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
@@ -6,7 +8,6 @@ from rest_framework.relations import SlugRelatedField
 
 from reviews.models import Category, Comment, Genre, Title, Review
 from users.models import CustomUser
-import re
 
 
 class CategorySerializer(serializers.ModelSerializer):

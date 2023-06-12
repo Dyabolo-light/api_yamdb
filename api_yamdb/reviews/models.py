@@ -1,17 +1,6 @@
-from datetime import datetime
 from django.db import models
-from django.core.exceptions import ValidationError
 from users.models import CustomUser
-
-
-def validate_year(value):
-    if value > datetime.now().year:
-        raise ValidationError('Будущее непредсказуемо')
-
-
-def validate_score(value):
-    if value not in range(1, 10):
-        raise ValidationError('Ожидается оценка от 1 до 10')
+from .validators import validate_score, validate_year
 
 
 class Category(models.Model):
